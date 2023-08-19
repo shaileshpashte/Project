@@ -1,0 +1,80 @@
+pip install tensorflow
+
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.datasets import cifar10
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.utils import to_categorical
+
+# Define class labels and tags
+class_labels = {
+    0: 'airplane',
+    1: 'automobile',
+    2: 'bird',
+    3: 'cat',
+    4: 'deer',
+    5: 'dog',
+    6: 'frog',
+    7: 'horse',
+    8: 'ship',
+    9: 'truck'
+}
+
+# Load and preprocess the CIFAR-10 dataset
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
+
+x_train = x_train.astype('float32') / 255.0
+x_test = x_test.astype('float32') / 255.0
+
+y_train = to_categorical(y_train, num_classes=10)
+y_test = to_categorical(y_test, num_classes=10)
+
+# Create the CNN model
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)),
+    MaxPooling2D((2, 2)),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dropout(0.5),
+    Dense(10, activation='softmax')
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(x_train, y_train, epochs=10, batch_size=64, validation_split=0.2)
+
+# Evaluate the model on the test set
+test_loss, test_accuracy = model.evaluate(x_test, y_test)
+print(f"Test accuracy: {test_accuracy:.4f}")
+
+# Make predictions on some test images
+num_samples = 10
+random_indices = np.random.choice(x_test.shape[0], num_samples, replace=False)
+sample_images = x_test[random_indices]
+sample_labels = y_test[random_indices]
+
+predictions = model.predict(sample_images)
+predicted_labels = np.argmax(predictions, axis=1)
+
+print("\nSample Predictions:")
+for i in range(num_samples):
+    true_label = np.argmax(sample_labels[i])
+    predicted_label = predicted_labels[i]
+    print(f"True Label: {class_labels[true_label]}, Predicted Label: {class_labels[predicted_label]}")
+
+
+
+This code does the following:
+
+    Loads and preprocesses the CIFAR-10 dataset.
+    Creates a CNN model similar to the previous example.
+    Compiles and trains the model.
+    Evaluates the model's accuracy on the test set.
+    Makes predictions on a few sample test images and compares them with the true labels.
